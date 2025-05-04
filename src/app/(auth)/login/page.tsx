@@ -19,6 +19,9 @@ import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { PawPrintIcon } from '@/components/icons/paw-print';
+import { Admin } from '@/app/models/admin';
+import { useState } from 'react';
+import adminServices from '@/app/services/adminServices';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),
@@ -29,6 +32,7 @@ const formSchema = z.object({
 });
 
 export default function LoginPage() {
+  const [admin, setAdmin] = useState<Admin>({email: "", name: "", password: "", role: ""});
   const router = useRouter();
   const { toast } = useToast();
 
@@ -41,15 +45,42 @@ export default function LoginPage() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Placeholder for authentication logic
-    console.log(values);
-    toast({
-      title: 'Login Successful',
-      description: `Welcome back, ${values.role} admin!`,
-    });
-    // Redirect based on role after successful login
-    router.push(`/${values.role}/dashboard`);
+  // function onSubmit(values: z.infer<typeof formSchema>) {
+  //   // Placeholder for authentication logic
+  //   console.log(values);
+  //   toast({
+  //     title: 'Login Successful',
+  //     description: `Welcome back, ${values.role} admin!`,
+  //   });
+  //   // Redirect based on role after successful login
+  //   router.push(`/${values.role}/dashboard`);
+  // }
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!admin.email || !admin.password) return
+    try {
+      await adminServices.loginAdmin(admin)
+      setAdmin({email: "", name: "", password: "", role: ""})
+      toast({
+        title: 'Login Successful',
+        description: `Welcome back, ${admin.role} admin!`,
+      });
+      // Redirect based on role after successful login
+      router.push(`/${admin.role}/dashboard`);
+    }  catch (error: unknown) {
+      if (error instanceof Error) {
+        toast({
+          title: 'Login Failed',
+          description: `${error}`,
+        });
+      } else {
+        toast({
+          title: 'Registration Failed',
+          description: `${error}`,
+        });
+      }
+  }
   }
 
   return (
@@ -64,7 +95,7 @@ export default function LoginPage() {
         </p>
       </div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={onSubmit} className="space-y-4">
           <FormField
             control={form.control}
             name="email"
@@ -72,7 +103,12 @@ export default function LoginPage() {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input placeholder="admin@paw.com" {...field} />
+                  <Input placeholder="admin@paw.com" {...field}
+                   onChange={ (e) => {
+                    field.onChange(e);
+                    setAdmin((prev) => ( {...prev, email: e.target.value}))
+                  }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -85,7 +121,12 @@ export default function LoginPage() {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="********" {...field} />
+                  <Input type="password" placeholder="********" {...field}
+                   onChange={ (e) => {
+                    field.onChange(e);
+                    setAdmin((prev) => ( {...prev, password: e.target.value}))
+                  }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -99,7 +140,10 @@ export default function LoginPage() {
                 <FormLabel>Select your role</FormLabel>
                 <FormControl>
                   <RadioGroup
-                    onValueChange={field.onChange}
+                   onValueChange={(value) => {
+                    field.onChange(value); // update form state
+                    setAdmin((prev) => ({ ...prev, role: value })); // update local state
+                  }}
                     defaultValue={field.value}
                     className="flex space-x-4"
                   >

@@ -19,6 +19,9 @@ import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { PawPrintIcon } from '@/components/icons/paw-print';
+import { Admin } from '@/app/models/admin';
+import React, { useState } from 'react';
+import adminServices from '@/app/services/adminServices';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -32,7 +35,7 @@ const formSchema = z.object({
 export default function RegisterPage() {
   const router = useRouter();
   const { toast } = useToast();
-
+  const [admin, setAdmin] = useState<Admin>({email: "", name: "", password: "", role: ""});
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -43,15 +46,41 @@ export default function RegisterPage() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Placeholder for registration logic
-    console.log(values);
-    toast({
-      title: 'Registration Successful',
-      description: `Welcome, ${values.name}! Your ${values.role} admin account has been created.`,
-    });
-    // Redirect to login page after successful registration
+  // function onSubmit(values: z.infer<typeof formSchema>) {
+  //   // Placeholder for registration logic
+    
+  //   toast({
+  //     title: 'Registration Successful',
+  //     description: `Welcome, ${values.name}! Your ${values.role} admin account has been created.`,
+  //   });
+  //   // Redirect to login page after successful registration
+  //   
+  // }
+
+  const onSubmit = async  (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!admin.name || !admin.password || !admin.role || !admin.email) return;
+    try {
+      await adminServices.registerAdmin(admin)
+      setAdmin({email: "", name: "", password: "", role: ""})
+         toast({
+        title: 'Registration Successful',
+        description: `Welcome, ${admin.name}! Your ${admin.role} admin account has been created.`,
+      });
     router.push('/login');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast({
+          title: 'Registration Failed',
+          description: `${error}`,
+        });
+      } else {
+        toast({
+          title: 'Registration Failed',
+          description: `${error}`,
+        });
+      }
+  }
   }
 
   return (
@@ -66,7 +95,7 @@ export default function RegisterPage() {
         </p>
       </div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={onSubmit} className="space-y-4">
            <FormField
             control={form.control}
             name="name"
@@ -74,7 +103,12 @@ export default function RegisterPage() {
               <FormItem>
                 <FormLabel>Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Your Clinic/Daycare Name" {...field} />
+                  <Input placeholder="Your Clinic/Daycare Name" {...field}
+                   onChange={ (e) => {
+                    field.onChange(e);
+                    setAdmin((prev) => ( {...prev, name: e.target.value}))
+                  }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -87,7 +121,12 @@ export default function RegisterPage() {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input placeholder="admin@paw.com" {...field} />
+                  <Input placeholder="admin@paw.com" {...field} 
+                  onChange={ (e) => {
+                    field.onChange(e);
+                    setAdmin((prev) => ( {...prev, email: e.target.value}))
+                  }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -100,7 +139,12 @@ export default function RegisterPage() {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="********" {...field} />
+                  <Input type="password" placeholder="********" {...field} 
+                   onChange={ (e) => {
+                    field.onChange(e);
+                    setAdmin((prev) => ( {...prev, password: e.target.value}))
+                  }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -114,7 +158,10 @@ export default function RegisterPage() {
                 <FormLabel>Select your role</FormLabel>
                 <FormControl>
                   <RadioGroup
-                    onValueChange={field.onChange}
+                    onValueChange={(value) => {
+                      field.onChange(value); // update form state
+                      setAdmin((prev) => ({ ...prev, role: value })); // update local state
+                    }}
                     defaultValue={field.value}
                     className="flex space-x-4"
                   >

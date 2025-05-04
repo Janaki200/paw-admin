@@ -46,28 +46,13 @@ export default function AppLayout({
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Bookings">
-                <Link href={`/${user.role}/bookings`}>
-                  <CalendarCheck />
-                  <span>Bookings</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-             <SidebarMenuItem>
-               <SidebarMenuButton asChild tooltip="Settings">
-                 <Link href={`/${user.role}/settings`}>
-                   <Settings />
-                   <span>Settings</span>
-                 </Link>
-               </SidebarMenuButton>
-             </SidebarMenuItem>
+           
           </SidebarMenu>
         </SidebarContent>
          <SidebarFooter>
             <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild variant="ghost" className="justify-start text-muted-foreground" tooltip="Logout">
+                  <SidebarMenuButton asChild className="justify-start text-muted-foreground" tooltip="Logout">
                      <Link href="/login"> {/* Should ideally trigger logout logic */}
                        <LogOut />
                        <span>Logout</span>
