@@ -30,12 +30,14 @@ const formSchema = z.object({
   role: z.enum(['clinic', 'daycare'], {
     required_error: 'You need to select an admin role.',
   }),
+  place:z.string().min(2, { message: 'Place must be at least 2 characters.' }),
+  phoneNumber:z.string().min(2, { message: 'Name must be at least 2 characters.' }),
 });
 
 export default function RegisterPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [admin, setAdmin] = useState<Admin>({email: "", name: "", password: "", role: ""});
+  const [admin, setAdmin] = useState<Admin>({email: "", name: "", password: "", role: "", place: "", phoneNumber:""});
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -43,6 +45,8 @@ export default function RegisterPage() {
       email: '',
       password: '',
       role: undefined,
+      place: '',
+      phoneNumber: '',
     },
   });
 
@@ -59,10 +63,10 @@ export default function RegisterPage() {
 
   const onSubmit = async  (e: React.FormEvent) => {
     e.preventDefault();
-    if (!admin.name || !admin.password || !admin.role || !admin.email) return;
+    if (!admin.name || !admin.password || !admin.role || !admin.email || !admin.place || !admin.phoneNumber) return;
     try {
       await adminServices.registerAdmin(admin)
-      setAdmin({email: "", name: "", password: "", role: ""})
+      setAdmin({email: "", name: "", password: "", role: "", place: "", phoneNumber:""})
          toast({
         title: 'Registration Successful',
         description: `Welcome, ${admin.name}! Your ${admin.role} admin account has been created.`,
@@ -107,6 +111,42 @@ export default function RegisterPage() {
                    onChange={ (e) => {
                     field.onChange(e);
                     setAdmin((prev) => ( {...prev, name: e.target.value}))
+                  }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+           <FormField
+            control={form.control}
+            name="place"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Location</FormLabel>
+                <FormControl>
+                  <Input placeholder="Your Clinic/Daycare Location" {...field}
+                   onChange={ (e) => {
+                    field.onChange(e);
+                    setAdmin((prev) => ( {...prev, place: e.target.value}))
+                  }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+           <FormField
+            control={form.control}
+            name="phoneNumber"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Phone Number</FormLabel>
+                <FormControl>
+                  <Input placeholder="Your Clinic/Daycare Phone Number" {...field}
+                   onChange={ (e) => {
+                    field.onChange(e);
+                    setAdmin((prev) => ( {...prev, phoneNumber: e.target.value}))
                   }}
                   />
                 </FormControl>

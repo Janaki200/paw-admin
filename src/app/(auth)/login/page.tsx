@@ -32,7 +32,7 @@ const formSchema = z.object({
 });
 
 export default function LoginPage() {
-  const [admin, setAdmin] = useState<Admin>({email: "", name: "", password: "", role: ""});
+  const [admin, setAdmin] = useState<Admin>({email: "", name: "", password: "", role: "", place: "", phoneNumber:""});
   const router = useRouter();
   const { toast } = useToast();
 
@@ -61,7 +61,7 @@ export default function LoginPage() {
     if (!admin.email || !admin.password) return
     try {
       await adminServices.loginAdmin(admin)
-      setAdmin({email: "", name: "", password: "", role: ""})
+      setAdmin({email: "", name: "", password: "", role: "", place: "", phoneNumber:""})
       toast({
         title: 'Login Successful',
         description: `Welcome back, ${admin.role} admin!`,

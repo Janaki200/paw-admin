@@ -4,4 +4,6 @@ export interface Admin {
     email: string
     password: string
     role: string
+    place: string
+    phoneNumber: string
 }
